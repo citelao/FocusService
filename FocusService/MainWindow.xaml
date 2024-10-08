@@ -8,7 +8,30 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top">
+        <StackPanel.Resources>
+            <Style TargetType="StackPanel" x:Name="CardStyle">
+                <Setter Target="BorderBrush" Value="Red" />
+                <Setter Target="BorderThickness" Value="1" />
+                <Setter Target="Padding" Value="8" />
+                <Setter Target="CornerRadius" Value="4"/>
+            </Style>
+        </StackPanel.Resources>
+
         <Button x:Name="myButton" Click="myButton_Click">Click Me</Button>
+
+        <StackPanel Style="{StaticResource CardStyle}">
+            <Button>Test</Button>
+            <Button>Test</Button>
+            <Button>Test</Button>
+            <Button>Test</Button>
+        </StackPanel>
+
+        <StackPanel Style="{StaticResource CardStyle}">
+            <Button>Test</Button>
+            <Button>Test</Button>
+            <Button>Test</Button>
+            <Button>Test</Button>
+        </StackPanel>
     </StackPanel>
 </Window>
