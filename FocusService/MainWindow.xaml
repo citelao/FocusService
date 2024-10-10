@@ -16,20 +16,60 @@
                 <Setter Target="Padding" Value="8" />
                 <Setter Target="CornerRadius" Value="4"/>
             </Style>
+            
+            <x:Boolean x:Key="True">True</x:Boolean>
         </StackPanel.Resources>
 
         <Button x:Name="myButton" Click="myButton_Click">Click Me</Button>
 
-        <StackPanel Style="{StaticResource CardStyle}">
+        <StackPanel
+            Style="{StaticResource CardStyle}"
+            XYFocusKeyboardNavigation="Enabled"
+            TabFocusNavigation="Once"
+            local:FocusService.IsFocusScope="True"
+            local:FocusService.DefaultFocusedElement="{x:Bind ButtonA}">
             <Button>Test</Button>
-            <Button>Test</Button>
+            <Button x:Name="ButtonA">Default</Button>
             <Button>Test</Button>
             <Button>Test</Button>
         </StackPanel>
 
-        <StackPanel Style="{StaticResource CardStyle}">
+        <StackPanel Style="{StaticResource CardStyle}"
+                    TabFocusNavigation="Once"
+                    XYFocusKeyboardNavigation="Enabled"
+                    local:FocusService.IsFocusScope="True"
+                    local:FocusService.DefaultFocusedElement="{x:Bind SecondDefault}">
+            <Button>Test</Button>
+            <Button
+                x:Name="SecondDefault"
+                TabFocusNavigation="Once"
+                XYFocusKeyboardNavigation="Enabled"
+                local:FocusService.DefaultFocusedElement="{x:Bind ChildDefault}">
+                <StackPanel>
+                    <TextBlock>Default with children</TextBlock>
+                    <Button>A</Button>
+                    <Button x:Name="ChildDefault">Default</Button>
+                    <Button>C</Button>
+                </StackPanel>
+            </Button>
             <Button>Test</Button>
             <Button>Test</Button>
+        </StackPanel>
+        
+        <StackPanel Style="{StaticResource CardStyle}"
+            TabFocusNavigation="Once"
+            XYFocusKeyboardNavigation="Enabled"
+            local:FocusService.IsFocusScope="True"
+            local:FocusService.DefaultFocusedElement="{x:Bind ThirdDefault}">
+            <Button>Test</Button>
+            <Button x:Name="ThirdDefault">
+                <StackPanel
+                    TabFocusNavigation="Once"
+                    XYFocusKeyboardNavigation="Enabled">
+                    <TextBlock>Default with child that shouldn't be focused</TextBlock>
+                    <Button>A</Button>
+                </StackPanel>
+            </Button>
             <Button>Test</Button>
             <Button>Test</Button>
         </StackPanel>
