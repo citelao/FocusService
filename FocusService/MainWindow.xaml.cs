@@ -32,5 +32,34 @@ namespace FocusService
         {
             myButton.Content = "Clicked";
         }
+
+        private void StackPanel_LosingFocus(UIElement sender, LosingFocusEventArgs args)
+        {
+            // Wrap any focus leaving the app the appropriate place manually.
+            var isFocusLeavingTheApp = args.NewFocusedElement == null;
+            if (isFocusLeavingTheApp)
+            {
+                var lastElement = FocusManager.FindLastFocusableElement(sender);
+                var firstElement = FocusManager.FindFirstFocusableElement(sender);
+
+                var isLastElement = (DependencyObject)args.OldFocusedElement == lastElement;
+                if (isLastElement)
+                {
+                    if (args.TrySetNewFocusedElement(firstElement))
+                    {
+                        args.Handled = true;
+                    }
+                }
+
+                var isFirstElement = (DependencyObject)args.OldFocusedElement == firstElement;
+                if (isFirstElement)
+                {
+                    if (args.TrySetNewFocusedElement(lastElement))
+                    {
+                        args.Handled = true;
+                    }
+                }
+            }
+        }
     }
 }

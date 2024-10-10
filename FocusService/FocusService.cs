@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Text;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
@@ -65,11 +66,15 @@ namespace FocusService
                         return;
                     }
 
+                    System.Diagnostics.Debug.WriteLine($"Focus is entering...");
                     if (TryGetDefaultFocusedDescendant(element) is FrameworkElement defaultFocusedElement)
                     {
+                        System.Diagnostics.Debug.WriteLine($"Setting focus to default element {defaultFocusedElement.GetType()} {defaultFocusedElement.Name}...");
+
                         // Lol this doesn't work when focus wraps! DERP!
                         if (args.TrySetNewFocusedElement(defaultFocusedElement))
                         {
+                            System.Diagnostics.Debug.WriteLine($"Done!");
                             args.Handled = true;
                         }
                     }
