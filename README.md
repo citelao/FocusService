@@ -1,6 +1,6 @@
 # Focus Service
 
-> ![NOTE]
+> [!NOTE]
 > This service is implemented as a demo to aid discussion with the XAML team.
 
 This is an example implementation of a WPF-style focus helper for WinAppSDK
@@ -51,5 +51,5 @@ Also required for accessibility, but not implemented here (for laziness):
 * **Size of set/Pos in set** (UIA properties)
 * **Home & end support**
 
-> ![NOTE]
+> [!NOTE]
 > None of the `FocusService` flags will have any effect by default unless you add `local:FocusService.IsFocusScope="True"`.
