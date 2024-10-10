@@ -76,6 +76,9 @@ namespace FocusService
                             return;
                         }
 
+                        // TODO: this does not seem to be working reliably if
+                        // `element` is the last element in the UI tree. Not
+                        // sure why...
                         System.Diagnostics.Debug.WriteLine($"Setting focus to default element {defaultFocusedElement.GetType()} {defaultFocusedElement.Name}...");
                         if (args.TrySetNewFocusedElement(defaultFocusedElement))
                         {
