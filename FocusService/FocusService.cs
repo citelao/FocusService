@@ -66,9 +66,16 @@ namespace FocusService
                         return;
                     }
 
-                    System.Diagnostics.Debug.WriteLine($"Focus is entering...");
+                    System.Diagnostics.Debug.WriteLine($"Focus is entering ({args.OriginalSource.GetType()}; {args.OldFocusedElement.GetType()} {(args.OldFocusedElement as FrameworkElement).Name} -> {args.NewFocusedElement.GetType()} {(args.NewFocusedElement as FrameworkElement).Name})...");
                     if (TryGetDefaultFocusedDescendant(element) is FrameworkElement defaultFocusedElement)
                     {
+                        // Don't double-run this
+                        if (defaultFocusedElement == args.NewFocusedElement)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Already focused on default element {defaultFocusedElement.GetType()} {defaultFocusedElement.Name}.");
+                            return;
+                        }
+
                         System.Diagnostics.Debug.WriteLine($"Setting focus to default element {defaultFocusedElement.GetType()} {defaultFocusedElement.Name}...");
 
                         // Lol this doesn't work when focus wraps! DERP!

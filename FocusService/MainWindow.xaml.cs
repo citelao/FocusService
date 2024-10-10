@@ -45,8 +45,10 @@ namespace FocusService
                 var isLastElement = (DependencyObject)args.OldFocusedElement == lastElement;
                 if (isLastElement)
                 {
+                    System.Diagnostics.Debug.WriteLine("Setting focus to first element...");
                     if (args.TrySetNewFocusedElement(firstElement))
                     {
+                        System.Diagnostics.Debug.WriteLine("Focus set to first element.");
                         args.Handled = true;
                     }
                 }
@@ -54,8 +56,10 @@ namespace FocusService
                 var isFirstElement = (DependencyObject)args.OldFocusedElement == firstElement;
                 if (isFirstElement)
                 {
+                    System.Diagnostics.Debug.WriteLine("Setting focus to last element...");
                     if (args.TrySetNewFocusedElement(lastElement))
                     {
+                        System.Diagnostics.Debug.WriteLine("Focus set to last element.");
                         args.Handled = true;
                     }
                 }
