@@ -36,6 +36,11 @@ namespace FocusService
         private void StackPanel_LosingFocus(UIElement sender, LosingFocusEventArgs args)
         {
             // Wrap any focus leaving the app the appropriate place manually.
+            //
+            // Otherwise, the focus will technically leave the window, be sent
+            // *back* into the window by the island (?) and then XAML will think
+            // the focus is entering the window for the first time---and refuse
+            // to let you move the focus.
             var isFocusLeavingTheApp = args.NewFocusedElement == null;
             if (isFocusLeavingTheApp)
             {

@@ -77,8 +77,6 @@ namespace FocusService
                         }
 
                         System.Diagnostics.Debug.WriteLine($"Setting focus to default element {defaultFocusedElement.GetType()} {defaultFocusedElement.Name}...");
-
-                        // Lol this doesn't work when focus wraps! DERP!
                         if (args.TrySetNewFocusedElement(defaultFocusedElement))
                         {
                             System.Diagnostics.Debug.WriteLine($"Done!");
