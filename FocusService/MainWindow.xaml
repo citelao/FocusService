@@ -33,6 +33,19 @@
             <Button>Test</Button>
             <Button>Test</Button>
         </StackPanel>
+        
+        <StackPanel
+            Style="{StaticResource CardStyle}"
+            XYFocusKeyboardNavigation="Enabled"
+            TabFocusNavigation="Once"
+            local:FocusService.IsFocusScope="True"
+            local:FocusService.RememberFocusedIndex="True"
+            local:FocusService.DefaultFocusedElement="{x:Bind ButtonB}">
+            <Button>Remember focus</Button>
+            <Button x:Name="ButtonB">Default</Button>
+            <Button>Test</Button>
+            <Button>Test</Button>
+        </StackPanel>
 
         <StackPanel Style="{StaticResource CardStyle}"
                     TabFocusNavigation="Once"
@@ -55,7 +68,7 @@
             <Button>Test</Button>
             <Button>Test</Button>
         </StackPanel>
-        
+
         <StackPanel Style="{StaticResource CardStyle}"
             TabFocusNavigation="Once"
             XYFocusKeyboardNavigation="Enabled"

@@ -18,7 +18,7 @@ namespace FocusService
             "IsFocusScope",
             typeof(Boolean),
             typeof(FocusService),
-            null);
+            new PropertyMetadata(false));
 
         public static Boolean GetIsFocusScope(DependencyObject obj)
         {
@@ -96,6 +96,115 @@ namespace FocusService
             return (FrameworkElement)obj.GetValue(DefaultFocusedElementProperty);
         }
 
+        public static void SetDefaultFocusedElement(DependencyObject obj, FrameworkElement value)
+        {
+            obj.SetValue(DefaultFocusedElementProperty, value);
+        }
+
+        public static readonly DependencyProperty FocusedIndexProperty = DependencyProperty.RegisterAttached(
+            "FocusedIndex",
+            typeof(int),
+            typeof(FocusService),
+            new PropertyMetadata(0));
+
+        public static int GetFocusedIndex(DependencyObject obj)
+        {
+            return (int)obj.GetValue(FocusedIndexProperty);
+        }
+
+        public static void SetFocusedIndex(DependencyObject obj, int value)
+        {
+            // TODO: should we check that keyboard nav is true?
+            //var repeater = obj as ItemsRepeater;
+            //if (repeater == null)
+            //{
+            //    throw new InvalidOperationException("FocusedIndex can only be set on an ItemsRepeater");
+            //}
+
+            obj.SetValue(FocusedIndexProperty, value);
+        }
+
+        public static readonly DependencyProperty RememberFocusedIndexProperty = DependencyProperty.RegisterAttached(
+            "RememberFocusedIndex",
+            typeof(Boolean),
+            typeof(FocusService),
+            new PropertyMetadata(false));
+
+        public static Boolean GetRememberFocusedIndex(DependencyObject obj)
+        {
+            return (Boolean)obj.GetValue(RememberFocusedIndexProperty);
+        }
+
+        private static DependencyObject TryGetImmediateChildOfAncestor(DependencyObject ancestor, DependencyObject descendant)
+        {
+            if (ancestor == null || descendant == null)
+            {
+                return null;
+            }
+
+            var currentElement = descendant;
+            while (true)
+            {
+                var parent = VisualTreeHelper.GetParent(currentElement);
+                if (parent == null)
+                {
+                    return null;
+                }
+
+                if (parent == ancestor)
+                {
+                    return currentElement;
+                }
+
+                currentElement = parent;
+            }
+        }
+
+        private static int? TryGetImmediateChildIndexOfAncestor(DependencyObject ancestor, DependencyObject descendant)
+        {
+            var immediateChild = TryGetImmediateChildOfAncestor(ancestor, descendant);
+            if (immediateChild == null)
+            {
+                return null;
+            }
+
+            var childCount = VisualTreeHelper.GetChildrenCount(ancestor);
+            for (var index = 0; index < childCount; index++)
+            {
+                var child = VisualTreeHelper.GetChild(ancestor, index);
+                if (child == immediateChild)
+                {
+                    return index;
+                }
+            }
+
+            return null;
+        }
+
+        public static void SetRememberFocusedIndex(DependencyObject obj, Boolean value)
+        {
+            var element = obj as FrameworkElement;
+            if (element == null)
+            {
+                throw new InvalidOperationException("IsFocusScope can only be set on a FrameworkElement");
+            }
+
+            if (value == true)
+            {
+                element.GotFocus += (sender, args) =>
+                {
+                    var currentIndex = TryGetImmediateChildIndexOfAncestor(obj, (DependencyObject)args.OriginalSource);
+                    SetFocusedIndex(obj, (int)currentIndex);
+                };
+            }
+            else
+            {
+                // TODO unregister
+            }
+
+            obj.SetValue(RememberFocusedIndexProperty, value);
+        }
+
         private static bool IsElementVisible(FrameworkElement element)
         {
             // We must walk the UI tree to determine if an element is visible or
@@ -129,6 +238,33 @@ namespace FocusService
             var currentElement = parent as FrameworkElement;
             while (true)
             {
+                // If the current element is focusable, don't check for focusable descendants.
+                var control = currentElement as Control;
+                var isCurrentObjectFocusable = control != null && IsFocusable(control);
+                var shouldFindFocusableDescendant = !isCurrentObjectFocusable;
+                if (shouldFindFocusableDescendant)
+                {
+                    // If we've chosen to remember the focused index for this
+                    // element, use that.
+                    var shouldUseFocusedIndex = GetRememberFocusedIndex(currentElement);
+                    if (shouldUseFocusedIndex)
+                    {
+                        var focusedIndex = GetFocusedIndex(currentElement);
+                        if (focusedIndex >= 0)
+                        {
+                            var childCount = VisualTreeHelper.GetChildrenCount(currentElement);
+                            if (focusedIndex >= childCount)
+                            {
+                                throw new InvalidOperationException($"FocusedIndex {focusedIndex} is out of range {childCount}");
+                            }
+
+                            var child = VisualTreeHelper.GetChild(currentElement, focusedIndex);
+                            currentElement = child as FrameworkElement;
+                            continue;
+                        }
+                    }
+                }
+
                 // Try getting the default focused element from the current element.
                 if (currentElement.GetValue(DefaultFocusedElementProperty) is FrameworkElement defaultFocusedElement)
                 {
@@ -136,23 +272,18 @@ namespace FocusService
                     continue;
                 }
 
-                // If the current element is focusable, don't check for focusable descendants.
-                var isCurrentObjectFocusable = IsElementVisible(currentElement);
-                var shouldFindFocusableDescendant = !isCurrentObjectFocusable;
-                if (shouldFindFocusableDescendant && FocusManager.FindFirstFocusableElement(currentElement) is FrameworkElement firstFocusableElement)
+                if (shouldFindFocusableDescendant)
                 {
-                    currentElement = firstFocusableElement;
-                    continue;
+                    if (FocusManager.FindFirstFocusableElement(currentElement) is FrameworkElement firstFocusableElement)
+                    {
+                        currentElement = firstFocusableElement;
+                        continue;
+                    }
                 }
 
                 // If we can't find a default focused element or a focusable element, we can't go any further.
                 return currentElement;
             }
-        }
-
-        public static void SetDefaultFocusedElement(DependencyObject obj, FrameworkElement value)
-        {
-            obj.SetValue(DefaultFocusedElementProperty, value);
         }
 
         public static bool TryFocusDefaultElement(FrameworkElement element, FocusState focusMethod = FocusState.Programmatic)
