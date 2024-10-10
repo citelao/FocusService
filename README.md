@@ -1,21 +1,55 @@
-MIT License
+# Focus Service
 
-Copyright (c) 2024 Ben Stolovitz (citelao)
+> ![NOTE]
+> This service is implemented as a demo to aid discussion with the XAML team.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This is an example implementation of a WPF-style focus helper for WinAppSDK
+(formerly UWP) XAML. They help you write **containers that work well with arrow
+keys.**
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+Specifically, these tools help you:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+* **Add focus "memory" to any container** - when I tab away from your container,
+  remember that focus so that I may return to it when I tab back.
+* **Support default-focused elements** for complicated controls - e.g. in a
+  dialog, reliably put default focus on the primary button.
+
+## Usage
+
+The tool is best used through XAML attached properties. To make an arbitrary
+panel in the UI "fully" keyboard accessible:
+
+```xml
+<StackPanel
+    Style="{StaticResource CardStyle}"
+    XYFocusKeyboardNavigation="Enabled"
+    TabFocusNavigation="Once"
+    local:FocusService.RememberFocusedIndex="True"
+    local:FocusService.DefaultFocusedElement="{x:Bind ButtonB}"
+    local:FocusService.IsFocusScope="True">
+    <Button>Remember focus</Button>
+    <Button x:Name="ButtonB">Default</Button>
+    <Button>Test</Button>
+    <Button>Test</Button>
+</StackPanel>
+```
+
+* `XYFocusKeyboardNavigation="Enabled"` - builtin to enable arrow keys through
+  the container.
+* `TabFocusNavigation="Once"` - only take tab focus once for the entire
+  container.
+* `local:FocusService.RememberFocusedIndex="True"` - remember the last-focused
+  element in the container & refocus it when focus returns.
+* Optional: `local:FocusService.DefaultFocusedElement="..."` - set a default
+  first focus for the container (useful for complicated UI, e.g. a dialog with a
+  default button)
+* `local:FocusService.IsFocusScope="True"` - attach a `GettingFocus` handler
+  that automatically
+
+Also required for accessibility, but not implemented here (for laziness):
+
+* **Size of set/Pos in set** (UIA properties)
+* **Home & end support**
+
+> ![NOTE]
+> None of the `FocusService` flags will have any effect by default unless you add `local:FocusService.IsFocusScope="True"`.

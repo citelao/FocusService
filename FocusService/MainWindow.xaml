@@ -37,7 +37,7 @@
             <Button>Test</Button>
             <Button>Test</Button>
         </StackPanel>
-        
+
         <StackPanel
             Style="{StaticResource CardStyle}"
             XYFocusKeyboardNavigation="Enabled"
