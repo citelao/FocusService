@@ -66,7 +66,14 @@ namespace FocusService
                         return;
                     }
 
-                    System.Diagnostics.Debug.WriteLine($"Focus is entering ({args.OriginalSource.GetType()}; {args.OldFocusedElement.GetType()} {(args.OldFocusedElement as FrameworkElement).Name} -> {args.NewFocusedElement.GetType()} {(args.NewFocusedElement as FrameworkElement).Name})...");
+                    if (args.OldFocusedElement == null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Focus is entering ({args.OriginalSource.GetType()} -> {args.NewFocusedElement.GetType()} {(args.NewFocusedElement as FrameworkElement).Name})...");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Focus is entering ({args.OriginalSource.GetType()}; {args.OldFocusedElement.GetType()} {(args.OldFocusedElement as FrameworkElement).Name} -> {args.NewFocusedElement.GetType()} {(args.NewFocusedElement as FrameworkElement).Name})...");
+                    }
                     if (TryGetDefaultFocusedDescendant(element) is FrameworkElement defaultFocusedElement)
                     {
                         // Don't double-run this
