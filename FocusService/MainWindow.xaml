@@ -8,11 +8,24 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <!--
+        You cannot redirect focus when it first enters a window, since you can't
+        *cancel* it, and those flags are connected. Unfortunately, when focus
+        wraps (e.g. from the last element to the first), XAML considers it to be
+        leaving the window & reentering (this may be a byproduct of Islands
+        work).
+
+        To allow us to redirect focus when it wraps, ensure it never "leaves"
+        the window by marking `TabFocusNavigation="Cycle"` on the root element.
+
+        Impl:
+        https://github.com/microsoft/microsoft-ui-xaml/blob/abf343b28e84d73e47464f36fd03cbca776cea3c/src/dxaml/xcp/core/dll/focusmgr.cpp#L3327
+    -->
     <StackPanel
+        TabFocusNavigation="Cycle"
         Orientation="Horizontal"
         HorizontalAlignment="Center"
-        VerticalAlignment="Top"
-        LosingFocus="StackPanel_LosingFocus">
+        VerticalAlignment="Top">
         <StackPanel.Resources>
             <Style TargetType="StackPanel" x:Name="CardStyle">
                 <Setter Target="BorderBrush" Value="Red" />

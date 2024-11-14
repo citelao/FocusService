@@ -32,43 +32,5 @@ namespace FocusService
         {
             myButton.Content = "Clicked";
         }
-
-        private void StackPanel_LosingFocus(UIElement sender, LosingFocusEventArgs args)
-        {
-            // Wrap any focus leaving the app the appropriate place manually.
-            //
-            // Otherwise, the focus will technically leave the window, be sent
-            // *back* into the window by the island (?) and then XAML will think
-            // the focus is entering the window for the first time---and refuse
-            // to let you move the focus.
-            var isFocusLeavingTheApp = args.NewFocusedElement == null;
-            if (isFocusLeavingTheApp)
-            {
-                var lastElement = FocusManager.FindLastFocusableElement(sender);
-                var firstElement = FocusManager.FindFirstFocusableElement(sender);
-
-                var isLastElement = (DependencyObject)args.OldFocusedElement == lastElement;
-                if (isLastElement)
-                {
-                    System.Diagnostics.Debug.WriteLine("Setting focus to first element...");
-                    if (args.TrySetNewFocusedElement(firstElement))
-                    {
-                        System.Diagnostics.Debug.WriteLine("Focus set to first element.");
-                        args.Handled = true;
-                    }
-                }
-
-                var isFirstElement = (DependencyObject)args.OldFocusedElement == firstElement;
-                if (isFirstElement)
-                {
-                    System.Diagnostics.Debug.WriteLine("Setting focus to last element...");
-                    if (args.TrySetNewFocusedElement(lastElement))
-                    {
-                        System.Diagnostics.Debug.WriteLine("Focus set to last element.");
-                        args.Handled = true;
-                    }
-                }
-            }
-        }
     }
 }
