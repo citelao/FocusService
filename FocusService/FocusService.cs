@@ -34,6 +34,9 @@ namespace FocusService
                 return false;
             }
 
+            // FrameworkElement.Parent is not the same as
+            // VisualTreeHelper.GetParent. It skips over certain elements that
+            // we care deeply about.
             var nextParent = VisualTreeHelper.GetParent(child);
             if (nextParent != null)
             {
@@ -50,9 +53,10 @@ namespace FocusService
 
         private static void HandleGettingFocus(UIElement sender, GettingFocusEventArgs args)
         {
-            // There is a bug in XAML where OldFocusedElement is null if focus wraps.
-            var isFocusEntering = args.OldFocusedElement == null || !IsDescendantOf(sender, args.OldFocusedElement);
-            if (!isFocusEntering)
+            // There is a bug in XAML where OldFocusedElement is null if focus
+            // wraps, so let's assume that focus is entering our sender in that case.
+            var isFocusEnteringSender = args.OldFocusedElement == null || !IsDescendantOf(sender, args.OldFocusedElement);
+            if (!isFocusEnteringSender)
             {
                 return;
             }
@@ -67,12 +71,11 @@ namespace FocusService
                     return;
                 }
 
-                // NOTE: this will not work correctly if focus is
-                // *wrapping* to the first or last element in a
-                // window/XAML island. Because XAML treats that as focus
-                // "entering" the window for the first time, & first
-                // focus cannot be redirected (due to what's presumably
-                // a bug).
+                // NOTE: TrySetNewFocusedElement will fail if focus is
+                // *wrapping* to the first or last element in a window/XAML
+                // island. Because XAML treats that as focus "entering" the
+                // window for the first time, & first focus cannot be redirected
+                // (due to what's presumably a bug).
                 //
                 // Windows can handle this by marking their top-level
                 // Grid/StackPanel as TabFocusNavigation="Cycle".
@@ -129,11 +132,16 @@ namespace FocusService
             "FocusedIndex",
             typeof(int),
             typeof(FocusService),
-            new PropertyMetadata(0));
+            new PropertyMetadata(-1));
 
-        public static int GetFocusedIndex(DependencyObject obj)
+        public static int? GetFocusedIndex(DependencyObject obj)
         {
-            return (int)obj.GetValue(FocusedIndexProperty);
+            var value = (int)obj.GetValue(FocusedIndexProperty);
+            if (value == -1)
+            {
+                return null;
+            }
+            return value;
         }
 
         public static void SetFocusedIndex(DependencyObject obj, int value)
@@ -274,7 +282,7 @@ namespace FocusService
                     if (shouldUseFocusedIndex)
                     {
                         var focusedIndex = GetFocusedIndex(currentElement);
-                        if (focusedIndex >= 0)
+                        if (focusedIndex != null)
                         {
                             var childCount = VisualTreeHelper.GetChildrenCount(currentElement);
                             if (focusedIndex >= childCount)
@@ -282,7 +290,7 @@ namespace FocusService
                                 throw new InvalidOperationException($"FocusedIndex {focusedIndex} is out of range {childCount}");
                             }
 
-                            var child = VisualTreeHelper.GetChild(currentElement, focusedIndex);
+                            var child = VisualTreeHelper.GetChild(currentElement, focusedIndex.Value);
                             currentElement = child as FrameworkElement;
                             continue;
                         }
