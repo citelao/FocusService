@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace FocusService
 {
@@ -47,6 +48,45 @@ namespace FocusService
             return false;
         }
 
+        private static void HandleGettingFocus(UIElement sender, GettingFocusEventArgs args)
+        {
+            // There is a bug in XAML where OldFocusedElement is null if focus wraps.
+            var isFocusEntering = args.OldFocusedElement == null || !IsDescendantOf(sender, args.OldFocusedElement);
+            if (!isFocusEntering)
+            {
+                return;
+            }
+
+            System.Diagnostics.Debug.WriteLine($"Focus is entering ({args.OriginalSource.GetType()}; {args.OldFocusedElement?.GetType()} {(args.OldFocusedElement as FrameworkElement)?.Name} -> {args.NewFocusedElement.GetType()} {(args.NewFocusedElement as FrameworkElement).Name})...");
+            if (TryGetDefaultFocusedDescendant(sender) is FrameworkElement defaultFocusedElement)
+            {
+                // Don't double-run our handler.
+                if (defaultFocusedElement == args.NewFocusedElement)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Already focused on default element {defaultFocusedElement.GetType()} {defaultFocusedElement.Name}.");
+                    return;
+                }
+
+                // NOTE: this will not work correctly if focus is
+                // *wrapping* to the first or last element in a
+                // window/XAML island. Because XAML treats that as focus
+                // "entering" the window for the first time, & first
+                // focus cannot be redirected (due to what's presumably
+                // a bug).
+                //
+                // Windows can handle this by marking their top-level
+                // Grid/StackPanel as TabFocusNavigation="Cycle".
+                //
+                // See MainWindow.xaml.
+                System.Diagnostics.Debug.WriteLine($"Setting focus to default element {defaultFocusedElement.GetType()} {defaultFocusedElement.Name}...");
+                if (args.TrySetNewFocusedElement(defaultFocusedElement))
+                {
+                    System.Diagnostics.Debug.WriteLine($"Done!");
+                    args.Handled = true;
+                }
+            }
+        }
+
         public static void SetIsFocusScope(DependencyObject obj, Boolean value)
         {
             var element = obj as FrameworkElement;
@@ -57,47 +97,11 @@ namespace FocusService
 
             if (value == true)
             {
-                element.GettingFocus += (sender, args) =>
-                {
-                    // There is a bug in XAML where OldFocusedElement is null if focus wraps.
-                    var isFocusEntering = args.OldFocusedElement == null || !IsDescendantOf(element, args.OldFocusedElement);
-                    if (!isFocusEntering)
-                    {
-                        return;
-                    }
-
-                    if (args.OldFocusedElement == null)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Focus is entering ({args.OriginalSource.GetType()} -> {args.NewFocusedElement.GetType()} {(args.NewFocusedElement as FrameworkElement).Name})...");
-                    }
-                    else
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Focus is entering ({args.OriginalSource.GetType()}; {args.OldFocusedElement.GetType()} {(args.OldFocusedElement as FrameworkElement).Name} -> {args.NewFocusedElement.GetType()} {(args.NewFocusedElement as FrameworkElement).Name})...");
-                    }
-                    if (TryGetDefaultFocusedDescendant(element) is FrameworkElement defaultFocusedElement)
-                    {
-                        // Don't double-run this
-                        if (defaultFocusedElement == args.NewFocusedElement)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"Already focused on default element {defaultFocusedElement.GetType()} {defaultFocusedElement.Name}.");
-                            return;
-                        }
-
-                        // TODO: this does not seem to be working reliably if
-                        // `element` is the last element in the UI tree. Not
-                        // sure why...
-                        System.Diagnostics.Debug.WriteLine($"Setting focus to default element {defaultFocusedElement.GetType()} {defaultFocusedElement.Name}...");
-                        if (args.TrySetNewFocusedElement(defaultFocusedElement))
-                        {
-                            System.Diagnostics.Debug.WriteLine($"Done!");
-                            args.Handled = true;
-                        }
-                    }
-                };
+                element.GettingFocus += HandleGettingFocus;
             }
             else
             {
-                // TODO: unregister?
+                element.GettingFocus -= HandleGettingFocus;
             }
 
             obj.SetValue(IsFocusScopeProperty, value);

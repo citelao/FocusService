@@ -20,6 +20,8 @@
 
         Impl:
         https://github.com/microsoft/microsoft-ui-xaml/blob/abf343b28e84d73e47464f36fd03cbca776cea3c/src/dxaml/xcp/core/dll/focusmgr.cpp#L3327
+
+        Internal bug: https://task.ms/55061161
     -->
     <StackPanel
         TabFocusNavigation="Cycle"
